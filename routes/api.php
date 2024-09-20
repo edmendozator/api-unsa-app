@@ -27,9 +27,13 @@ Route::post('auth', [AuthController::class, 'auth']);
 
 //Route::get('programs/{cui}', [ProgramController::class, 'index'])->middleware('auth:sanctum');
 Route::get('profile/{cui}', [StudentController::class, 'perfil']);//->middleware('auth:api');
-Route::get('current_period', [AcademicController::class, 'periodo_vigente']);//->middleware('auth:api');
 Route::get('programs/{cui}', [StudentController::class, 'programs']);//->middleware('auth:api');
+Route::get('current_period', [AcademicController::class, 'periodo_vigente']);//->middleware('auth:api');
 Route::get('enroll', [AcademicController::class, 'matricula']);//->middleware('auth:api');
+Route::get('enroll_payment', [AcademicController::class, 'pago_matricula']);//->middleware('auth:api');
+
 Route::get('grades/{cui}/{nues}/{espe}', [GradeController::class, 'show'])->middleware('auth:api');
 Route::get('partial_notes/{cui}/{nues}/{espe}', [GradeController::class, 'notas_parciales']);//->middleware('auth:api');
+Route::get('schedule_subject', [AcademicController::class, 'horario_asignatura']);//->middleware('auth:api');
+
 
