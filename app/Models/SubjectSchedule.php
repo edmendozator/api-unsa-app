@@ -18,4 +18,9 @@ class SubjectSchedule extends Model
     {
         return $this->hasOne(Day::class, 'codi_dias', 'codi_dias');
     }
+
+    public function hour()
+    {
+        return $this->hasOne(Hour::class, ['codi_hora', 'codi_depe', 'anno', 'cicl'], ['codi_hora', 'codi_depe', 'anno', 'cicl']);
+    }
 }

@@ -84,19 +84,63 @@ class AcademicController extends Controller
 
         $horario = array();
 
-        foreach ($matriculas as $key => $matricula) {
-            $horario[$key]['asignatura'] = $matricula->subject->nasi;
+        foreach ($matriculas as $idx => $matricula) {
+            $horario[$idx]['asignatura'] = $matricula->subject->nasi;
 
-            $horarios = SubjectSchedule::with('day')->where('codi_depe', $matricula->nues)
+            $horas = SubjectSchedule::with('day', 'hour')->where('codi_depe', $matricula->nues)
                 ->where('codi_asig', $matricula->casi)->where('anno', '2024')->where('cicl', 'A')
-                ->orderBy('fdig_asho', 'asc')->get();
+		->orderBy('fdig_asho', 'asc')->get();
 
-            \Log::info($horarios);
+            $bloque_lunes = '';
+	    $bloque_martes = '';
+	    $bloque_miercoles = '';
+	    $bloque_jueves = '';
+	    $bloque_viernes = '';
+            
+	    foreach ($horas as $key => $hora) {
+
+               switch($hora->day->codi_dias) {
+	       	  case 1:
+			  $bloque_lunes .= $hora->hour->desd_hora . " - " . $hora->hour->hast_hora . ", ";
+			  break;
+		  case 2:
+			  $bloque_martes .= $hora->hour->desd_hora . " - " . $hora->hour->hast_hora . ", ";
+			  break;
+		  case 3:
+			  $bloque_miercoles .= $hora->hour->desd_hora . " - " . $hora->hour->hast_hora . ", ";
+			  break;
+		  case 4:
+			  $bloque_jueves .= $hora->hour->desd_hora . " - " . $hora->hour->hast_hora . ", ";
+			  break;
+		  case 5:
+			  $bloque_viernes .= $hora->hour->desd_hora . " - " . $hora->hour->hast_hora . ", ";
+			  break;
+	       }		       
+	    }
+
+	    if ($bloque_lunes != '') {
+		    $horario[$idx]['lunes'] = $bloque_lunes;
+	    }
+
+	    if ($bloque_martes != '') {
+                    $horario[$idx]['martes'] = $bloque_martes;
+	    }
+
+	    if ($bloque_miercoles != '') {
+                    $horario[$idx]['miercoles'] = $bloque_miercoles;
+	    }
+
+	    if ($bloque_jueves != '') {
+                    $horario[$idx]['jueves'] = $bloque_jueves;
+	    }
+
+	    if ($bloque_viernes != '') {
+                    $horario[$idx]['viernes'] = $bloque_viernes;
+            }
 
         }
-      
-        //\Log::info($horario);
-        //return $asignaturas;
+              
+        return $horario;
 
     }
 
