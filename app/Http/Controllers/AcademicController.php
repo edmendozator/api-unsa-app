@@ -77,7 +77,7 @@ class AcademicController extends Controller
         $nues = $request->nues;
         $espe = $request->espe;
 
-        $matriculas = Enroll::with('subject:nasi,casi,nues,espe', 'subject_schedules')
+        $matriculas = Enroll::with('subject:nasi,casi,nues,espe')            
             ->select('casi', 'nues', 'espe')
             ->where('cui', $cui)->where('nues', $nues)->where('espe', $espe)
             ->get();
@@ -89,63 +89,155 @@ class AcademicController extends Controller
 
             $horas = SubjectSchedule::with('day', 'hour')->where('codi_depe', $matricula->nues)
                 ->where('codi_asig', $matricula->casi)->where('anno', '2024')->where('cicl', 'A')
-		->orderBy('fdig_asho', 'asc')->get();
+		        ->orderBy('fdig_asho', 'asc')->get();
 
             $bloque_lunes = '';
-	    $bloque_martes = '';
-	    $bloque_miercoles = '';
-	    $bloque_jueves = '';
-	    $bloque_viernes = '';
-            
-	    foreach ($horas as $key => $hora) {
-
-               switch($hora->day->codi_dias) {
-	       	  case 1:
-			  $bloque_lunes .= $hora->hour->desd_hora . " - " . $hora->hour->hast_hora . ", ";
-			  break;
-		  case 2:
-			  $bloque_martes .= $hora->hour->desd_hora . " - " . $hora->hour->hast_hora . ", ";
-			  break;
-		  case 3:
-			  $bloque_miercoles .= $hora->hour->desd_hora . " - " . $hora->hour->hast_hora . ", ";
-			  break;
-		  case 4:
-			  $bloque_jueves .= $hora->hour->desd_hora . " - " . $hora->hour->hast_hora . ", ";
-			  break;
-		  case 5:
-			  $bloque_viernes .= $hora->hour->desd_hora . " - " . $hora->hour->hast_hora . ", ";
-			  break;
-	       }		       
-	    }
-
-	    if ($bloque_lunes != '') {
-		    $horario[$idx]['lunes'] = $bloque_lunes;
-	    }
-
-	    if ($bloque_martes != '') {
-                    $horario[$idx]['martes'] = $bloque_martes;
-	    }
-
-	    if ($bloque_miercoles != '') {
-                    $horario[$idx]['miercoles'] = $bloque_miercoles;
-	    }
-
-	    if ($bloque_jueves != '') {
-                    $horario[$idx]['jueves'] = $bloque_jueves;
-	    }
-
-	    if ($bloque_viernes != '') {
-                    $horario[$idx]['viernes'] = $bloque_viernes;
+            $bloque_martes = '';
+            $bloque_miercoles = '';
+            $bloque_jueves = '';
+            $bloque_viernes = '';
+                
+            foreach ($horas as $key => $hora) {
+                switch($hora->day->codi_dias) {
+                    case 1:
+                        $bloque_lunes .= $hora->hour->desd_hora . " - " . $hora->hour->hast_hora . ", ";
+                        break;
+                    case 2:
+                        $bloque_martes .= $hora->hour->desd_hora . " - " . $hora->hour->hast_hora . ", ";
+                        break;
+                    case 3:
+                        $bloque_miercoles .= $hora->hour->desd_hora . " - " . $hora->hour->hast_hora . ", ";
+                        break;
+                    case 4:
+                        $bloque_jueves .= $hora->hour->desd_hora . " - " . $hora->hour->hast_hora . ", ";
+                        break;
+                    case 5:
+                        $bloque_viernes .= $hora->hour->desd_hora . " - " . $hora->hour->hast_hora . ", ";
+                        break;
+                }		       
             }
 
+            if ($bloque_lunes != '') {
+                $horario[$idx]['lunes'] = $bloque_lunes;
+            }
+
+            if ($bloque_martes != '') {
+                $horario[$idx]['martes'] = $bloque_martes;
+            }
+
+            if ($bloque_miercoles != '') {
+                $horario[$idx]['miercoles'] = $bloque_miercoles;
+            }
+
+            if ($bloque_jueves != '') {
+                $horario[$idx]['jueves'] = $bloque_jueves;
+            }
+
+            if ($bloque_viernes != '') {
+                $horario[$idx]['viernes'] = $bloque_viernes;
+            }
         }
               
         return $horario;
-
     }
 
-    public function horario_semestre()
+    public function horario_alumno(Request $request)
     {
+        $cui = $request->cui;
+        $nues = $request->nues;
+        $espe = $request->espe;
 
+        $matriculas = Enroll::with('subject:nasi,casi,nues,espe')
+            /* ->with(['subject_schedules' => function ($query) {
+                $query->where('anno', '2024')->where('cicl', 'A');
+            }]) */
+            ->select('casi', 'nues', 'espe')
+            ->where('cui', $cui)->where('nues', $nues)->where('espe', $espe)
+            ->get();        
+
+        $horario = array();
+        $contadorHoras = 0;
+
+        foreach ($matriculas as $idx => $matricula) {
+            $horas = SubjectSchedule::with('day', 'hour')->where('codi_depe', $matricula->nues)
+                ->where('codi_asig', $matricula->casi)->where('anno', '2024')->where('cicl', 'A')
+                ->orderBy('fdig_asho', 'asc')->get();
+
+            $bloque_lunes = '';
+            $bloque_martes = '';
+            $bloque_miercoles = '';
+            $bloque_jueves = '';
+            $bloque_viernes = '';
+                
+            foreach ($horas as $key => $hora) {
+                switch($hora->day->codi_dias) {
+                    case 1:
+                        $bloque_lunes .= $hora->hour->desd_hora . " - " . $hora->hour->hast_hora . ", ";
+                        break;
+                    case 2:
+                        $bloque_martes .= $hora->hour->desd_hora . " - " . $hora->hour->hast_hora . ", ";
+                        break;
+                    case 3:
+                        $bloque_miercoles .= $hora->hour->desd_hora . " - " . $hora->hour->hast_hora . ", ";
+                        break;
+                    case 4:
+                        $bloque_jueves .= $hora->hour->desd_hora . " - " . $hora->hour->hast_hora . ", ";
+                        break;
+                    case 5:
+                        $bloque_viernes .= $hora->hour->desd_hora . " - " . $hora->hour->hast_hora . ", ";
+                        break;
+                }		       
+            }
+
+            $horas_distintas = SubjectSchedule::with('classroom')->where('codi_depe', $matricula->nues)
+                ->where('codi_asig', $matricula->casi)->where('anno', '2024')->where('cicl', 'A')
+                ->select('codi_asig', 'codi_aula', 'codi_dias')->distinct('codi_dias')->orderBy('fdig_asho', 'asc')->get();
+
+            foreach ($horas_distintas as $index => $hora_distinta) {
+                switch ($hora_distinta->codi_dias) {
+                    case 1:
+                        if ($bloque_lunes != '') {
+                            $horario[$contadorHoras]['dia'] = 'lunes';
+                            $horario[$contadorHoras]['asignatura'] = $matricula->subject->nasi;
+                            $horario[$contadorHoras]['hora'] = $bloque_lunes;
+                        }
+                        break;
+                    case 2:
+                        if ($bloque_martes != '') {
+                            $horario[$contadorHoras]['dia'] = 'martes';
+                            $horario[$contadorHoras]['asignatura'] = $matricula->subject->nasi;
+                            $horario[$contadorHoras]['hora'] = $bloque_martes;
+                        }
+                        break;
+                    case 3:
+                        if ($bloque_miercoles != '') {
+                            $horario[$contadorHoras]['dia'] = 'miercoles';
+                            $horario[$contadorHoras]['asignatura'] = $matricula->subject->nasi;
+                            $horario[$contadorHoras]['hora'] = $bloque_miercoles;
+                        }
+                        break;
+                    case 4:
+                        if ($bloque_jueves != '') {
+                            $horario[$contadorHoras]['dia'] = 'jueves';
+                            $horario[$contadorHoras]['asignatura'] = $matricula->subject->nasi;
+                            $horario[$contadorHoras]['hora'] = $bloque_jueves;
+                        }
+                        break;
+                    case 5:
+                        if ($bloque_viernes != '') {
+                            $horario[$contadorHoras]['dia'] = 'viernes';
+                            $horario[$contadorHoras]['asignatura'] = $matricula->subject->nasi;
+                            $horario[$contadorHoras]['hora'] = $bloque_viernes;
+                        } 
+                        break;                    
+                }      
+
+                $horario[$contadorHoras]['aula'] = $hora_distinta->classroom->nomb_aula;                            
+
+                $contadorHoras++;          
+            }           
+        }       
+
+        return $horario;
     }
 }

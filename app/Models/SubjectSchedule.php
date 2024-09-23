@@ -23,4 +23,9 @@ class SubjectSchedule extends Model
     {
         return $this->hasOne(Hour::class, ['codi_hora', 'codi_depe', 'anno', 'cicl'], ['codi_hora', 'codi_depe', 'anno', 'cicl']);
     }
+
+    public function classroom()
+    {
+        return $this->belongsTo(Classroom::class, 'codi_aula', 'codi_aula');
+    }
 }
