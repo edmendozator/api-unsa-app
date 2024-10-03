@@ -32,10 +32,12 @@ Route::get('current_period', [AcademicController::class, 'periodo_vigente']);//-
 Route::get('enroll', [AcademicController::class, 'matricula']);//->middleware('auth:api');
 Route::get('enroll_payment', [AcademicController::class, 'pago_matricula']);//->middleware('auth:api');
 
-Route::get('grades/{cui}/{nues}/{espe}', [GradeController::class, 'show'])->middleware('auth:api');
+Route::get('grades/{cui}/{nues}/{espe}', [GradeController::class, 'show']);//->middleware('auth:api');
 Route::get('partial_notes/{cui}/{nues}/{espe}', [GradeController::class, 'notas_parciales']);//->middleware('auth:api');
 Route::get('student_schedule', [AcademicController::class, 'horario_alumno']);//->middleware('auth:api');
 Route::get('schedule_subject', [AcademicController::class, 'horario_asignatura']);//->middleware('auth:api');
+Route::get('curriculum', [AcademicController::class, 'plan_estudios']);//->middleware('auth:api');
+
 
 
 

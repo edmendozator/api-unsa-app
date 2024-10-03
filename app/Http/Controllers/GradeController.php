@@ -17,7 +17,7 @@ class GradeController extends Controller
             ->join('actasig', $table . '.casi', '=', 'actasig.casi')
             ->where('cui', $cui)
             ->where('nues', $nues)
-            ->where('espe', $espe)
+            ->where('actasig.espe', $espe)
             ->select('nasi', 'nota', 'matr', 'anoh', 'cicl', 'fech')
             ->get();
 
