@@ -89,7 +89,7 @@ class AcademicController extends Controller
         foreach ($matriculas as $idx => $matricula) {
             $horario[$idx]['asignatura'] = $matricula->subject->nasi;
 
-            $horas = SubjectSchedule::with('day', 'hour')->where('codi_depe', $matricula->nues)
+            $horas = SubjectSchedule::with('classroom', 'day', 'hour')->where('codi_depe', $matricula->nues)
                 ->where('codi_asig', $matricula->casi)->where('anno', '2024')->where('cicl', 'A')
 		        ->orderBy('fdig_asho', 'asc')->get();
 
@@ -137,7 +137,9 @@ class AcademicController extends Controller
 
             if ($bloque_viernes != '') {
                 $horario[$idx]['viernes'] = $bloque_viernes;
-            }
+	    }
+
+	    $horario[$idx]['aula'] = $hora->classroom->nomb_aula;
         }
               
         return $horario;
@@ -248,7 +250,7 @@ class AcademicController extends Controller
         $nues = $request->nues;
         $espe = $request->espe;
         $planes_estudio = array();
-        $planes = Plan::where('nues', $nues)->orderBy('cplan', 'desc')->limit(1)->get();
+        $planes = Plan::where('nues', $nues)->orderBy('cplan', 'desc')->limit(2)->get();
 
         foreach ($planes as $key1 => $plan) {
             $plan = $plan->cplan;

@@ -114,5 +114,5 @@ class StudentController extends Controller
         $programs = $this->get_programs($cui);
 
         return new ProgramCollection($programs);
-    }
+    }    
 }
