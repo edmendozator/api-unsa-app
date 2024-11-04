@@ -7,6 +7,8 @@ use App\Http\Controllers\AcademicController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\GradeController;
 use App\Http\Controllers\NoteController;
+use App\Http\Controllers\TestStudentController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -25,6 +27,7 @@ use App\Http\Controllers\NoteController;
 
 
 Route::post('auth', [AuthController::class, 'auth']);
+Route::post('auth_admin', [AuthController::class, 'auth_admin']);
 
 //Route::get('programs/{cui}', [ProgramController::class, 'index'])->middleware('auth:sanctum');
 Route::get('profile/{cui}', [StudentController::class, 'perfil']);//->middleware('auth:api');
@@ -42,6 +45,8 @@ Route::get('failed_courses', [GradeController::class, 'asignaturas_desaprobadas'
 Route::get('student_schedule', [AcademicController::class, 'horario_alumno']);//->middleware('auth:api');
 Route::get('schedule_subject', [AcademicController::class, 'horario_asignatura']);//->middleware('auth:api');
 Route::get('curriculum', [AcademicController::class, 'plan_estudios']);//->middleware('auth:api');
+
+Route::put('set_cui_test', [TestStudentController::class, 'update']);//->middleware('auth:api');
 
 Route::apiResource('notes', NoteController::class);
 

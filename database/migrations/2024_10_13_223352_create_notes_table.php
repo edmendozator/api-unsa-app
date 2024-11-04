@@ -14,11 +14,11 @@ class CreateNotesTable extends Migration
     public function up()
     {
         Schema::create('notes', function (Blueprint $table) {
-	    $table->id();
-	    $table->char('cui', 8);
+	        $table->id();
+	        $table->char('cui', 8);
             $table->char('nues', 3);
             $table->char('espe', 1);
-	    $table->string('casi', 7);
+	        $table->string('casi', 7);
             $table->char('anio', 4);
             $table->char('ciclo', 1);
             $table->text('descripcion');            
