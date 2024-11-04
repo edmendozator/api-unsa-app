@@ -41,7 +41,6 @@ Route::get('partial_notes/{cui}/{nues}/{espe}', [GradeController::class, 'notas_
 Route::get('approved_courses', [GradeController::class, 'asignaturas_aprobadas']);//->middleware('auth:api');
 Route::get('failed_courses', [GradeController::class, 'asignaturas_desaprobadas']);//->middleware('auth:api');
 
-
 Route::get('student_schedule', [AcademicController::class, 'horario_alumno']);//->middleware('auth:api');
 Route::get('schedule_subject', [AcademicController::class, 'horario_asignatura']);//->middleware('auth:api');
 Route::get('curriculum', [AcademicController::class, 'plan_estudios']);//->middleware('auth:api');

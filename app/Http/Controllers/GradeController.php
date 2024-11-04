@@ -31,7 +31,7 @@ class GradeController extends Controller
             AND a.parc_id=b.parc_id AND b.parc_anoh=? AND (b.parc_cicl='A' OR parc_tipo='A')
             AND a.parc_casi=c.casi AND b.parc_nues=c.nues AND a.parc_cui=? AND b.parc_nues=?
             AND a.parc_id=d.parc_id and a.parc_casi=d.parc_casi AND a.parc_grup=d.parc_grup ORDER BY a.parc_casi,a.parc_id", 
-            ['2022', $cui, $nues]);
+            [$this->periodo->anho, $cui, $nues]);
             
         return $notas_parciales;
     }
