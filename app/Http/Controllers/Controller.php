@@ -13,12 +13,14 @@ class Controller extends BaseController
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
     
     protected $periodo;
-    protected $matriculados_table;
+    protected $matricula_table;
+    protected $pago_matricula_table;
 
     public function __construct()
     {
         $this->periodo = $this->getPeriodoActivo();
-        $this->matriculados_table = $this->getMatriculadosTableName($this->periodo->anho);
+        $this->matricula_table = $this->getMatriculasTableName($this->periodo->anho);
+        $this->pago_matricula_table = $this->getPagoMatriculaTableName($this->periodo->anho);
     }
 
     protected function getPeriodoActivo()
@@ -26,8 +28,13 @@ class Controller extends BaseController
         return Period::where('codi_depe', '999')->firstOrFail();
     }
 
-    protected function getMatriculadosTableName($year)
+    protected function getMatriculasTableName($year)
     {
         return 'acpma' . substr($year, '2');
+    }
+
+    protected function getPagoMatriculaTableName($year)
+    {
+        return 'acprm' . substr($year, '2');
     }
 }

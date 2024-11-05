@@ -27,24 +27,18 @@ use App\Http\Controllers\NoteController;
 Route::post('auth', [AuthController::class, 'auth']);
 Route::post('auth_admin', [AuthController::class, 'auth_admin']);
 
-//Route::get('programs/{cui}', [ProgramController::class, 'index'])->middleware('auth:sanctum');
-Route::get('profile/{cui}', [StudentController::class, 'perfil']);//->middleware('auth:api');
-Route::get('programs/{cui}', [StudentController::class, 'programs']);//->middleware('auth:api');
-Route::get('current_period', [AcademicController::class, 'periodo_vigente']);//->middleware('auth:api');
-Route::get('enroll', [AcademicController::class, 'matricula']);//->middleware('auth:api');
-Route::get('enroll_payment', [AcademicController::class, 'pago_matricula']);//->middleware('auth:api');
-
-Route::get('grades/{cui}/{nues}/{espe}', [GradeController::class, 'show']);//->middleware('auth:api');
-Route::get('partial_notes/{cui}/{nues}/{espe}', [GradeController::class, 'notas_parciales']);//->middleware('auth:api');
-Route::get('approved_courses', [GradeController::class, 'asignaturas_aprobadas']);//->middleware('auth:api');
-Route::get('failed_courses', [GradeController::class, 'asignaturas_desaprobadas']);//->middleware('auth:api');
-
-Route::get('student_schedule', [AcademicController::class, 'horario_alumno']);//->middleware('auth:api');
-Route::get('schedule_subject', [AcademicController::class, 'horario_asignatura']);//->middleware('auth:api');
-Route::get('curriculum', [AcademicController::class, 'plan_estudios']);//->middleware('auth:api');
-
-Route::apiResource('notes', NoteController::class);
-
-
-
-
+Route::middleware('auth:api')->group(function () {
+    Route::get('profile/{cui}', [StudentController::class, 'perfil']);
+    Route::get('programs/{cui}', [StudentController::class, 'programs']);
+    Route::get('current_period', [AcademicController::class, 'periodo_vigente']);
+    Route::get('enroll', [AcademicController::class, 'matricula']);
+    Route::get('enroll_payment', [AcademicController::class, 'pago_matricula']);
+    Route::get('grades/{cui}/{nues}/{espe}', [GradeController::class, 'show']);
+    Route::get('partial_notes/{cui}/{nues}/{espe}', [GradeController::class, 'notas_parciales']);
+    Route::get('approved_courses', [GradeController::class, 'asignaturas_aprobadas']);
+    Route::get('failed_courses', [GradeController::class, 'asignaturas_desaprobadas']);
+    Route::get('student_schedule', [AcademicController::class, 'horario_alumno']);
+    Route::get('schedule_subject', [AcademicController::class, 'horario_asignatura']);
+    Route::get('curriculum', [AcademicController::class, 'plan_estudios']);
+    Route::apiResource('notes', NoteController::class);
+});

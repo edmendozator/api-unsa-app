@@ -15,55 +15,36 @@ use App\Http\Resources\EnrollPaymentResource;
 class AcademicController extends Controller
 {
     public function periodo_vigente()
-    {
-        $current_period = Period::where('codi_depe', '999')
-            ->select(\DB::raw("CONCAT(SUBSTRING(codi_peri, 1, LENGTH(codi_peri) - 1), '-', SUBSTRING(codi_peri, -1)) AS periodo"))
-            ->first()->periodo;
-
+    {      
         return [
-            'periodo' => $current_period
+            'periodo' => $this->periodo->anho . "-" . $this->periodo->ciclo
         ];
     }
 
     public function matricula(Request $request)
-    {
-        $current_period = Period::where('codi_depe', '999')
-            ->select(\DB::raw("CONCAT(SUBSTRING(codi_peri, 1, LENGTH(codi_peri) - 1), '-', SUBSTRING(codi_peri, -1)) AS periodo"))
-            ->first()
-            ->periodo;
-        
-        $anio = substr($current_period, 2, 2);
-        $cicl = substr($current_period, 5, 1);
+    {        
         $cui = $request->cui;
         $nues = $request->nues;
         $espe = $request->espe;
 
-        $matriculas = DB::connection('conexion_siac')->select("SELECT a.casi,b.nasi,b.cred,a.grup,a.matr 
-            from acpma" . $anio . "=a left join actasig=b on (a.nues=b.nues and a.casi=b.casi) 
+        $matriculas = DB::connection('conexion_siac')->select("SELECT a.casi, b.nasi, b.cred, a.grup, a.matr 
+            from " . $this->matricula_table . "=a left join actasig=b on (a.nues=b.nues and a.casi=b.casi) 
             where a.cicl=? and a.nues=? and a.espe=? and a.cui=? order by a.casi", 
-            [$cicl, $nues, $espe, $cui]);
+            [$this->periodo->ciclo, $nues, $espe, $cui]);
             
         return new EnrollCollection($matriculas);
     }
 
     public function pago_matricula(Request $request)
-    {
-        $current_period = Period::where('codi_depe', '999')
-            ->select(\DB::raw("CONCAT(SUBSTRING(codi_peri, 1, LENGTH(codi_peri) - 1), '-', SUBSTRING(codi_peri, -1)) AS periodo"))
-            ->first()
-            ->periodo;
-
-        $anio = substr($current_period, 2, 2);
-        $cicl = substr($current_period, 5, 1);
+    {       
         $cui = $request->cui;
         $nues = $request->nues;
         $espe = $request->espe;
 
-        $pago_matricula = DB::connection('conexion_siac')->select("SELECT fdig as fecha_pago,digi as cajero, mont+montn+montr as monto_pagado 
-            from acprm" . $anio . " where cicl=? and nues=?  and espe=? and cui=?", 
-            [$cicl, $nues, $espe, $cui]);
+        $pago_matricula = DB::connection('conexion_siac')->select("SELECT fdig as fecha_pago, digi as cajero, mont+montn+montr as monto_pagado 
+            from " . $this->pago_matricula_table . " where cicl=? and nues=? and espe=? and cui=?", 
+            [$this->periodo->ciclo, $nues, $espe, $cui]);
             
-            // Get the first result, or null if no results
         $pago_matricula = !empty($pago_matricula) ? (object)$pago_matricula[0] : null;
 
         if ($pago_matricula) {
@@ -90,8 +71,11 @@ class AcademicController extends Controller
             $horario[$idx]['asignatura'] = $matricula->subject->nasi;
 
             $horas = SubjectSchedule::with('classroom', 'day', 'hour')->where('codi_depe', $matricula->nues)
-                ->where('codi_asig', $matricula->casi)->where('anno', '2024')->where('cicl', 'A')
-		        ->orderBy('fdig_asho', 'asc')->get();
+                ->where('codi_asig', $matricula->casi)
+                ->where('anno', $this->periodo->anho)
+                ->where('cicl', $this->periodo->ciclo)
+		        ->orderBy('fdig_asho', 'asc')
+                ->get();
 
             $bloque_lunes = '';
             $bloque_martes = '';
@@ -164,7 +148,9 @@ class AcademicController extends Controller
 
         foreach ($matriculas as $idx => $matricula) {
             $horas = SubjectSchedule::with('day', 'hour')->where('codi_depe', $matricula->nues)
-                ->where('codi_asig', $matricula->casi)->where('anno', '2024')->where('cicl', 'A')
+                ->where('codi_asig', $matricula->casi)
+                ->where('anno', $this->periodo->anho)
+                ->where('cicl', $this->periodo->ciclo)
                 ->orderBy('fdig_asho', 'asc')->get();
 
             $bloque_lunes = '';
@@ -194,8 +180,13 @@ class AcademicController extends Controller
             }
 
             $horas_distintas = SubjectSchedule::with('classroom')->where('codi_depe', $matricula->nues)
-                ->where('codi_asig', $matricula->casi)->where('anno', '2024')->where('cicl', 'A')
-                ->select('codi_asig', 'codi_aula', 'codi_dias')->distinct('codi_dias')->orderBy('fdig_asho', 'asc')->get();
+                ->where('codi_asig', $matricula->casi)
+                ->where('anno', $this->periodo->anho)
+                ->where('cicl', $this->periodo->ciclo)
+                ->select('codi_asig', 'codi_aula', 'codi_dias')
+                ->distinct('codi_dias')
+                ->orderBy('fdig_asho', 'asc')
+                ->get();
 
             foreach ($horas_distintas as $index => $hora_distinta) {
                 switch ($hora_distinta->codi_dias) {

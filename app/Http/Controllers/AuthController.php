@@ -145,9 +145,7 @@ class AuthController extends Controller
 
 
     public function auth_admin(Request $request)
-    {  
-	    \Log::info($request->all());
-	 
+    {  	 
         $this->validateAuthAdmin($request);
 
         $token = $request->input('token');

@@ -61,7 +61,8 @@ class GradeController extends Controller
                                         FROM acdl401=a,actasig=b,SIAC_NOTA_APRO=c 
                                         WHERE a.casi=b.casi AND b.nues=? AND b.nues=c.codi_depe AND a.anoh=c.nota_anoh 
                                         AND a.cicl=c.nota_cicl AND a.cui=? AND (FIND_IN_SET(a.core,'D,N,R') OR (a.nota<c.nota_apro AND FIND_IN_SET(a.core,'J,S,C,V'))) 
-                                        AND b.vige<>'N' order by substring(a.casi,4,2),a.casi", [$nues, $cui]);
+                                        AND b.vige<>'N' order by substring(a.casi, 4, 2), a.casi", 
+                                        [$nues, $cui]);
             
         return $asignaturas_desaprobadas;
     }
