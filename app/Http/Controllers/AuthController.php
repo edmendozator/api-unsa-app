@@ -11,7 +11,6 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Program;
 use App\Models\StudentProgram;
-use App\Models\StudentTest;
 use App\Models\Admin;
 
 use Illuminate\Support\Facades\DB;
@@ -34,26 +33,20 @@ class AuthController extends Controller
 
         if ($payload) {
             $email = $payload['email'];
-            $name = 'renzo'; //$payload['name'];
-	    $fake_cui = StudentTest::find(1)->fake_cui;
-	    $admin = Admin::where('email', $email)->first();
-            $alumno_unsa = StudentEmail::where('mail', current(explode('@', $email)))->first();
-
-            if (!$fake_cui) {
+            $name = $payload['name'];
+            $admin = Admin::where('email', $email)->first();
+            
+            if (!$admin) {
+                $alumno_unsa = StudentEmail::where('mail', current(explode('@', $email)))->first();
                 $cui = $alumno_unsa->cui;
-            }
-            else {
-                $cui = $fake_cui;
-	    }
+                $isAdmin = false;
+            } else {
+                $alumno_unsa = null;
+                $cui = null;
+                $isAdmin = true;
+            }	    
 
-	    if (!$admin) {
-	       $isAdmin = false;
-            }
-            else {
-	       $isAdmin = true;
-	    }	    
-
-            //if ($alumno_unsa) {
+            if ($alumno_unsa || $isAdmin) {
                 $program = array();
                 $hasManyPrograms;
                 $student_programs = StudentProgram::join('actescu', 'acdidal.nues', '=', 'actescu.nues')
@@ -86,7 +79,6 @@ class AuthController extends Controller
                         ->where('nuesmen', $nuesmen)
                         ->select('actescu_modi.nombre')
                         ->first();
-                    //$programa = Program::where('nues', $nues)->first();
 
                     if (!$programa) {
                         $programa = Program::where('plan', '=', function ($query) use ($nuesmen) {
@@ -120,8 +112,8 @@ class AuthController extends Controller
                 if (!$hasManyPrograms) { // si solo tiene un programa pregrado
                     return response()->json([
                         'status' => 'success',
-			'message' => 'Acceso autorizado',
-			'isAdmin' => $isAdmin,			
+                        'message' => 'Acceso autorizado',
+                        'isAdmin' => $isAdmin,			
                         'access_token' => JWTAuth::fromUser($user),
                         'cui' => $cui,
                         'hasManyPrograms' => $hasManyPrograms,
@@ -131,18 +123,18 @@ class AuthController extends Controller
                     return response()->json([
                         'status' => 'success',
                         'message' => 'Acceso autorizado',
-			'isAdmin' => $isAdmin,			
+			            'isAdmin' => $isAdmin,			
                         'access_token' => JWTAuth::fromUser($user),
                         'cui' => $cui,
                         'hasManyPrograms' => $hasManyPrograms
                     ], 200);
                 }
-            /* } else {
+            } else {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Acceso no autorizado, no es alumno pregrado'
                 ], 403);
-            } */
+            }
         } else {
             return response()->json([
                 'status' => 'error',
@@ -154,24 +146,23 @@ class AuthController extends Controller
 
     public function auth_admin(Request $request)
     {  
-	//\Log::info($request->all());
+	    \Log::info($request->all());
 	 
         $this->validateAuthAdmin($request);
 
-	$token = $request->input('token');
-	$cui = $request->input('cui');
+        $token = $request->input('token');
+        $cui = $request->input('cui');
 
         $client = new Google_Client(['client_id' => env('GOOGLE_CLIENT_ID')]);
         $payload = $client->verifyIdToken($token);
 
         if ($payload) {
             $email = $payload['email'];
-            $name = 'renzo'; //$payload['name'];
+            $name = $payload['name'];
 	    
-            $alumno_unsa = StudentEmail::where('cui', $cui)->first();
-           	    
+            $alumno_unsa = StudentEmail::where('cui', $cui)->first();           	 
 
-            //if ($alumno_unsa) {
+            if ($alumno_unsa) {
                 $program = array();
                 $hasManyPrograms;
                 $student_programs = StudentProgram::join('actescu', 'acdidal.nues', '=', 'actescu.nues')
@@ -204,7 +195,6 @@ class AuthController extends Controller
                         ->where('nuesmen', $nuesmen)
                         ->select('actescu_modi.nombre')
                         ->first();
-                    //$programa = Program::where('nues', $nues)->first();
 
                     if (!$programa) {
                         $programa = Program::where('plan', '=', function ($query) use ($nuesmen) {
@@ -238,8 +228,8 @@ class AuthController extends Controller
                 if (!$hasManyPrograms) { // si solo tiene un programa pregrado
                     return response()->json([
                         'status' => 'success',
-			'message' => 'Acceso autorizado',
-			'access_token' => JWTAuth::fromUser($user),
+                        'message' => 'Acceso autorizado',
+                        'access_token' => JWTAuth::fromUser($user),
                         'cui' => $cui,
                         'hasManyPrograms' => $hasManyPrograms,
                         'program' => $program
@@ -248,17 +238,17 @@ class AuthController extends Controller
                     return response()->json([
                         'status' => 'success',
                         'message' => 'Acceso autorizado',
-			'access_token' => JWTAuth::fromUser($user),
+			            'access_token' => JWTAuth::fromUser($user),
                         'cui' => $cui,
                         'hasManyPrograms' => $hasManyPrograms
                     ], 200);
                 }
-            /* } else {
+            } else {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Acceso no autorizado, no es alumno pregrado'
                 ], 403);
-            } */
+            }
         } else {
             return response()->json([
                 'status' => 'error',
@@ -266,8 +256,6 @@ class AuthController extends Controller
             ], 401);
         }
     }
-
-
 
     public function validateAuth(Request $request)
     {
@@ -279,8 +267,8 @@ class AuthController extends Controller
     public function validateAuthAdmin(Request $request)
     {
         return $request->validate([
-		'token' => 'required',
-		'cui' => 'required'
+            'token' => 'required',
+            'cui' => 'required'
         ]);
     }
 }
