@@ -41,7 +41,7 @@ class AcademicController extends Controller
         $nues = $request->nues;
         $espe = $request->espe;
 
-        $pago_matricula = DB::connection('conexion_siac')->select("SELECT fdig as fecha_pago, digi as cajero, mont+montn+montr as monto_pagado 
+        $pago_matricula = DB::connection('conexion_siac')->select("SELECT fdig as fecha_pago, digi as cajero, mont + montr as monto_pagado 
             from " . $this->pago_matricula_table . " where cicl=? and nues=? and espe=? and cui=?", 
             [$this->periodo->ciclo, $nues, $espe, $cui]);
             
