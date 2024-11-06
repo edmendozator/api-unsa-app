@@ -61,7 +61,7 @@ class AcademicController extends Controller
         $espe = $request->espe;
 
         $matriculas = Enroll::with('subject:nasi,casi,nues,espe')            
-            ->select('casi', 'nues', 'espe')
+            ->select('casi', 'nues', 'espe', 'cicl', 'grup')
             ->where('cui', $cui)->where('nues', $nues)->where('espe', $espe)
             ->get();
 
@@ -70,10 +70,12 @@ class AcademicController extends Controller
         foreach ($matriculas as $idx => $matricula) {
             $horario[$idx]['asignatura'] = $matricula->subject->nasi;
 
-            $horas = SubjectSchedule::with('classroom', 'day', 'hour')->where('codi_depe', $matricula->nues)
+            $horas = SubjectSchedule::with('classroom', 'day', 'hour')
+                ->where('codi_depe', $matricula->nues)
                 ->where('codi_asig', $matricula->casi)
+                ->where('codi_grup', $matricula->grup)
                 ->where('anno', $this->periodo->anho)
-                ->where('cicl', $this->periodo->ciclo)
+                ->where('cicl', $matricula->cicl)
 		        ->orderBy('fdig_asho', 'asc')
                 ->get();
 
@@ -133,13 +135,13 @@ class AcademicController extends Controller
     {
         $cui = $request->cui;
         $nues = $request->nues;
-        $espe = $request->espe;
+        $espe = $request->espe;      
 
         $matriculas = Enroll::with('subject:nasi,casi,nues,espe')
             /* ->with(['subject_schedules' => function ($query) {
                 $query->where('anno', '2024')->where('cicl', 'A');
             }]) */
-            ->select('casi', 'nues', 'espe')
+            ->select('casi', 'nues', 'espe', 'cicl', 'grup')
             ->where('cui', $cui)->where('nues', $nues)->where('espe', $espe)
             ->get();        
 
@@ -147,11 +149,14 @@ class AcademicController extends Controller
         $contadorHoras = 0;
 
         foreach ($matriculas as $idx => $matricula) {
-            $horas = SubjectSchedule::with('day', 'hour')->where('codi_depe', $matricula->nues)
+            $horas = SubjectSchedule::with('day', 'hour')
+                ->where('codi_depe', $matricula->nues)
                 ->where('codi_asig', $matricula->casi)
+                ->where('codi_grup', $matricula->grup)
                 ->where('anno', $this->periodo->anho)
-                ->where('cicl', $this->periodo->ciclo)
-                ->orderBy('fdig_asho', 'asc')->get();
+                ->where('cicl', $matricula->cicl)
+                ->orderBy('fdig_asho', 'asc')
+                ->get();
 
             $bloque_lunes = '';
             $bloque_martes = '';
@@ -179,10 +184,12 @@ class AcademicController extends Controller
                 }		       
             }
 
-            $horas_distintas = SubjectSchedule::with('classroom')->where('codi_depe', $matricula->nues)
+            $horas_distintas = SubjectSchedule::with('classroom')
+                ->where('codi_depe', $matricula->nues)
                 ->where('codi_asig', $matricula->casi)
+                ->where('codi_grup', $matricula->grup)
                 ->where('anno', $this->periodo->anho)
-                ->where('cicl', $this->periodo->ciclo)
+                ->where('cicl', $matricula->cicl)
                 ->select('codi_asig', 'codi_aula', 'codi_dias')
                 ->distinct('codi_dias')
                 ->orderBy('fdig_asho', 'asc')
