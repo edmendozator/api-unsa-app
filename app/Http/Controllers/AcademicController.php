@@ -54,30 +54,127 @@ class AcademicController extends Controller
         }      
     }
 
-    public function horario_asignatura(Request $request)
+    public function horario_asignatura_todo(Request $request)
     {
-        $cui = $request->cui;
         $nues = $request->nues;
         $espe = $request->espe;
 
         $matriculas = Enroll::with('subject:nasi,casi,nues,espe')            
             ->select('casi', 'nues', 'espe', 'cicl', 'grup')
-            ->where('cui', $cui)->where('nues', $nues)->where('espe', $espe)
+            ->distinct()
+            ->where('nues', $nues)
+	    ->where('espe', $espe)                
+	    ->where('core', '<>', 'Z')
+            ->orderBy('casi', 'asc')
+            ->orderBy('grup', 'asc')
             ->get();
 
-        $horario = array();
+	$horario = array();
+	$numAsig = 0;
 
         foreach ($matriculas as $idx => $matricula) {
-            $horario[$idx]['asignatura'] = $matricula->subject->nasi;
-
             $horas = SubjectSchedule::with('classroom', 'day', 'hour')
                 ->where('codi_depe', $matricula->nues)
                 ->where('codi_asig', $matricula->casi)
                 ->where('codi_grup', $matricula->grup)
                 ->where('anno', $this->periodo->anho)
                 ->where('cicl', $matricula->cicl)
-		        ->orderBy('fdig_asho', 'asc')
-                ->get();
+	        ->orderBy('fdig_asho', 'asc')
+		->get();
+	   
+	    if (count($horas) > 0) {
+              $horario[$numAsig]['asignatura'] = $matricula->subject->nasi;		   
+	    }
+              
+	    $bloque_lunes = '';
+            $bloque_martes = '';
+            $bloque_miercoles = '';
+            $bloque_jueves = '';
+            $bloque_viernes = '';
+                
+            foreach ($horas as $key => $hora) {
+                switch($hora->day->codi_dias) {
+                    case 1:
+                        $bloque_lunes .= $hora->hour->desd_hora . " - " . $hora->hour->hast_hora . ", ";
+                        break;
+                    case 2:
+                        $bloque_martes .= $hora->hour->desd_hora . " - " . $hora->hour->hast_hora . ", ";
+                        break;
+                    case 3:
+                        $bloque_miercoles .= $hora->hour->desd_hora . " - " . $hora->hour->hast_hora . ", ";
+                        break;
+                    case 4:
+                        $bloque_jueves .= $hora->hour->desd_hora . " - " . $hora->hour->hast_hora . ", ";
+                        break;
+                    case 5:
+                        $bloque_viernes .= $hora->hour->desd_hora . " - " . $hora->hour->hast_hora . ", ";
+                        break;
+                }		       
+            }
+
+            if ($bloque_lunes != '') {
+                $horario[$numAsig]['lunes'] = $bloque_lunes;
+            }
+
+            if ($bloque_martes != '') {
+                $horario[$numAsig]['martes'] = $bloque_martes;
+            }
+
+            if ($bloque_miercoles != '') {
+                $horario[$numAsig]['miercoles'] = $bloque_miercoles;
+            }
+
+            if ($bloque_jueves != '') {
+                $horario[$numAsig]['jueves'] = $bloque_jueves;
+            }
+
+            if ($bloque_viernes != '') {
+                $horario[$numAsig]['viernes'] = $bloque_viernes;
+	    }
+	    
+	    if (count($horas) > 0) {
+	        $horario[$numAsig]['aula'] = $hora->classroom->nomb_aula;
+	        $horario[$numAsig]['grupo'] = $matricula->grup;	
+                $numAsig++;	    
+	    }           	    
+        }
+              
+        return $horario;
+    }
+
+    public function horario_asignatura_por_anio(Request $request)
+    {
+        $nues = $request->nues;
+	$espe = $request->espe;
+	$anio = $request->anio;
+
+        $matriculas = Enroll::with('subject:nasi,casi,nues,espe')            
+            ->select('casi', 'nues', 'espe', 'cicl', 'grup')
+            ->distinct()
+            ->where('nues', $nues)
+	    ->where('espe', $espe)
+	    ->where('core', '<>', 'Z')
+	    ->whereRaw('SUBSTRING(casi, 4, 1) = ?', [$anio])
+            ->orderBy('casi', 'asc')
+            ->orderBy('grup', 'asc')
+            ->get();
+       
+        $horario = array();
+	$numAsig = 0;
+
+        foreach ($matriculas as $idx => $matricula) {
+            $horas = SubjectSchedule::with('classroom', 'day', 'hour')
+                ->where('codi_depe', $matricula->nues)
+                ->where('codi_asig', $matricula->casi)
+                ->where('codi_grup', $matricula->grup)
+                ->where('anno', $this->periodo->anho)
+                ->where('cicl', $matricula->cicl)
+	        ->orderBy('fdig_asho', 'asc')
+		->get();
+
+	    if (count($horas) > 0) {
+              $horario[$numAsig]['asignatura'] = $matricula->subject->nasi;
+            }
 
             $bloque_lunes = '';
             $bloque_martes = '';
@@ -106,26 +203,32 @@ class AcademicController extends Controller
             }
 
             if ($bloque_lunes != '') {
-                $horario[$idx]['lunes'] = $bloque_lunes;
+                $horario[$numAsig]['lunes'] = $bloque_lunes;
             }
 
             if ($bloque_martes != '') {
-                $horario[$idx]['martes'] = $bloque_martes;
+                $horario[$numAsig]['martes'] = $bloque_martes;
             }
 
             if ($bloque_miercoles != '') {
-                $horario[$idx]['miercoles'] = $bloque_miercoles;
+                $horario[$numAsig]['miercoles'] = $bloque_miercoles;
             }
 
             if ($bloque_jueves != '') {
-                $horario[$idx]['jueves'] = $bloque_jueves;
+                $horario[$numAsig]['jueves'] = $bloque_jueves;
             }
 
             if ($bloque_viernes != '') {
-                $horario[$idx]['viernes'] = $bloque_viernes;
+                $horario[$numAsig]['viernes'] = $bloque_viernes;
 	    }
 
-	    $horario[$idx]['aula'] = $hora->classroom->nomb_aula;
+   
+	    if (count($horas) > 0) {
+	      $horario[$numAsig]['aula'] = $hora->classroom->nomb_aula;
+              $horario[$numAsig]['grupo'] = $matricula->grup;           
+	      $horario[$numAsig]['casi'] = $matricula->casi;
+              $numAsig++;
+            }	      
         }
               
         return $horario;
