@@ -353,11 +353,64 @@ class AcademicController extends Controller
         $planes_estudio = array();
         $planes = Plan::where('nues', $nues)->orderBy('cplan', 'desc')->limit(2)->get();
 
-        foreach ($planes as $key1 => $plan) {
+	foreach ($planes as $key1 => $plan) {
             $plan = $plan->cplan;
-            $plan_abrev = substr($plan, 2, 2);
+	    $plan_abrev = substr($plan, 2, 2);
+             
             $planes_estudio[$key1]['plan'] = $plan;
+	        
+	    $resumen = DB::connection('conexion_siac')->select("SELECT cred_extr_tall, cred_extr_conv, cred_egre_tota, cred_egre_totd, cred_egre_tote, cred_egre_totf, cred_egre_totg, cred_obli_tota, cred_obli_totd, cred_obli_tote, cred_obli_totf, cred_obli_totg, cred_elec_tota, cred_elec_totd, cred_elec_tote, cred_elec_totf, cred_elec_totg FROM ACM_CRED_EGRE WHERE nues=? AND espe=? AND plan=?",
+		    [$nues, $espe, $plan]);
+         if (!empty($resumen) && isset($resumen[0])) {
+	     $cred_codificados_total = 0;	 
+             $resumenObject = $resumen[0];
+                  
+	     $componentes = DB::connection('conexion_siac')
+		     ->select("select ncomp,sum(cred) as cred, a.comp from actasig=a,SIAC_COMP=b where nues=? and substring(casi,1,2)=? and vige='S' AND cond<>'N' and a.comp=b.comp AND substring(casi,3,1) in (?,'0') group by b.ncomp, a.comp order by comp", [$nues, $plan_abrev, $espe]);                          
+		          
+	     foreach ($componentes as $index => $componente) {
+		     $comp = $componente->comp;
+		     $ncomp = $componente->ncomp;
+		     $cred = $componente->cred;
+                     $cred_codificados_total += $cred;
 
+		     switch($comp) {				
+		         case 'D':		             
+                             $cred_egre_tot = $resumenObject->cred_egre_totd;
+                             $cred_egre_obli = $resumenObject->cred_obli_totd;
+                             $cred_egre_elec = $resumenObject->cred_elec_totd;
+			     break;
+
+			 case 'E':
+                             $cred_egre_tot = $resumenObject->cred_egre_tote;
+                             $cred_egre_obli = $resumenObject->cred_obli_tote;
+                             $cred_egre_elec = $resumenObject->cred_elec_tote;
+			     break;
+
+			 case 'F':
+                             $cred_egre_tot = $resumenObject->cred_egre_totf;
+                             $cred_egre_obli = $resumenObject->cred_obli_totf;
+                             $cred_egre_elec = $resumenObject->cred_elec_totf;
+			     break;
+
+			 case 'G':
+                             $cred_egre_tot = $resumenObject->cred_egre_totg;
+                             $cred_egre_obli = $resumenObject->cred_obli_totg;
+                             $cred_egre_elec = $resumenObject->cred_elec_totg;
+                             break;
+		     }
+                     
+		     $datos_resumen_comp[] = array('componente'=>"$ncomp ($comp)",'cred_codificados'=>$cred,'cred_para_egresar'=>$cred_egre_tot,'cred_obligatorios'=>$cred_egre_obli,'cred_electivos'=>$cred_egre_elec);
+	     }
+
+             $planes_estudio[$key1]['total_cred_curriculares_codificados'] = $cred_codificados_total;	     
+             $cred_egre_tota = $resumenObject->cred_egre_tota;
+             $planes_estudio[$key1]['cred_curriculares_egresar'] = $cred_egre_tota;
+             $cred_egre_extra = $resumenObject->cred_extr_tall + $resumenObject->cred_extr_conv;
+             $planes_estudio[$key1]['cred_extra_curriculares_egresar'] = $cred_egre_extra;
+             $planes_estudio[$key1]['resumen'] = $datos_resumen_comp;
+         }
+            
             $asignaturas = Subject::where('nues', $nues)
                                 ->where('casi', 'like', $plan_abrev . '%')
                                 ->where('vige', 'S')
