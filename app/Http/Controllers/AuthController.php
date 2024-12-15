@@ -52,7 +52,7 @@ class AuthController extends Controller
                 $student_programs = StudentProgram::join('actescu', 'acdidal.nues', '=', 'actescu.nues')
                     ->where('actescu.nive', 'Z') //solo pregrado
 		    ->where('acdidal.cui', $cui)
-		    ->whereIn('cond', ['A', 'N', 'I', 'S'])
+		    ->whereIn('cond', ['E', 'A', 'N', 'I', 'S'])
                     ->select('acdidal.nues', 'acdidal.espe', DB::raw("SUBSTRING(acdidal.cod0, 3, 2) AS anio_ingreso"))
                     ->get();
 
@@ -167,7 +167,7 @@ class AuthController extends Controller
                 $student_programs = StudentProgram::join('actescu', 'acdidal.nues', '=', 'actescu.nues')
                     ->where('actescu.nive', 'Z') //solo pregrado
                     ->where('acdidal.cui', $cui)
-		    ->whereIn('cond', ['A', 'N', 'I', 'S'])
+		    ->whereIn('cond', ['E', 'A', 'N', 'I', 'S'])
                     ->select('acdidal.nues', 'acdidal.espe', DB::raw("SUBSTRING(acdidal.cod0, 3, 2) AS anio_ingreso"))
                     ->get();
 

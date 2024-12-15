@@ -508,6 +508,20 @@ class AcademicController extends Controller
                                 break;
                         }
 
+			break;
+
+		    case '7':
+                        $cursos[$key2]['anio'] = 'SÉPTIMO AÑO';
+
+                        switch($semestre) {
+                            case '1':
+                                $cursos[$key2]['semestre'] = 'DECIMO TERCERO SEMESTRE';
+                                break;
+                            case '2':
+                                $cursos[$key2]['semestre'] = 'DECIMO CUARTO SEMESTRE';
+                                break;
+                        }
+
                         break;
                 }
 
