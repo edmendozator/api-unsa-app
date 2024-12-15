@@ -27,7 +27,7 @@ use App\Http\Controllers\NoteController;
 Route::post('auth', [AuthController::class, 'auth']);
 Route::post('auth_admin', [AuthController::class, 'auth_admin']);
 
-//Route::middleware('auth:api')->group(function () {
+Route::middleware('auth:api')->group(function () {
     Route::get('programs/{cui}', [StudentController::class, 'programs']);
     Route::get('current_period', [AcademicController::class, 'periodo_vigente']);
     Route::get('profile/{cui}', [StudentController::class, 'perfil']);
@@ -42,4 +42,4 @@ Route::post('auth_admin', [AuthController::class, 'auth_admin']);
     Route::get('schedule_subject_by_year', [AcademicController::class, 'horario_asignatura_por_anio']);
     Route::get('curriculum', [AcademicController::class, 'plan_estudios']);
     Route::apiResource('notes', NoteController::class);
-//});
+});
