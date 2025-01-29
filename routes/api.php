@@ -26,6 +26,7 @@ use App\Http\Controllers\NoteController;
 
 Route::post('auth', [AuthController::class, 'auth']);
 Route::post('auth_admin', [AuthController::class, 'auth_admin']);
+Route::post('auth_demo', [AuthController::class, 'auth_demo']);
 
 Route::middleware('auth:api')->group(function () {
     Route::get('programs/{cui}', [StudentController::class, 'programs']);
